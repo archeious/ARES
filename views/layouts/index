@@ -1,0 +1,5 @@
+{{define "index" }} 
+{{ template "header" }}
+<h1>Welcome {{.user.Username}} to template land</h1>
+{{ template "footer" }}
+{{end}}

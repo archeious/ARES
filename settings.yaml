@@ -1,0 +1,5 @@
+APP_NAME: Test
+TEMPLATES:
+        BASE: views
+        LAYOUTS: layouts
+        PARTIALS: partials
