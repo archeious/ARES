@@ -1,8 +1,0 @@
-{{define "header"}}
-<html>
-<head>
-	<title>TITLE</title>
-</head>
-
-<body>
-{{end}}
