@@ -1,5 +1,7 @@
 package models
 
+// Basic User Interface
+
 type User interface {
 	SetPassword(string) error
 	ValidatePassword(string) (bool, error)
