@@ -5,5 +5,5 @@
 /src/gopkg.in
 /src/google.golang.org
 /static/public/img
-settings.yml
+settings.yaml
 main
