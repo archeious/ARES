@@ -1,4 +1,4 @@
-package models
+package user
 
 import "fmt"
 
@@ -9,7 +9,6 @@ type BaseUserRepository struct {
 
 func (b *BaseUserRepository) GetUserByName(name string) (User, error) {
 	if _, ok := b.users[name]; ok {
-		fmt.Println("\nGETTING: GetUserByName with %v from %v", name, b)
 		u := b.users[name]
 		return &u, nil
 	} else {

@@ -7,7 +7,7 @@ import (
 	"github.com/tsuru/config"
 	"html/template"
 	"log"
-	"models"
+	"models/user"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -17,7 +17,7 @@ import (
 var (
 	templatesPath = "views"
 	templates     map[string]*template.Template
-	UserRepo      models.UserRepository
+	UserRepo      user.UserRepository
 )
 
 func init() {
@@ -50,7 +50,7 @@ func init() {
 		templates[filepath.Base(layout)] = template.Must(template.ParseFiles(files...))
 	}
 
-	UserRepo = models.NewBaseUserRepository()
+	UserRepo = user.NewBaseUserRepository()
 	if _, err := UserRepo.NewUser("jeff", "password"); err != nil {
 		fmt.Println(err)
 	}
@@ -72,7 +72,7 @@ func renderTemplate(w http.ResponseWriter, name string, data map[string]interfac
 }
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	user := models.BaseUser{Username: "Jeff"}
+	user := user.BaseUser{Username: "Jeff"}
 	vars := make(map[string]interface{})
 	vars["user"] = user
 	renderTemplate(w, "index", vars)
