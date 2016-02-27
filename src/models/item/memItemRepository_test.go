@@ -4,7 +4,7 @@ import "testing"
 
 func TestNewItem(t *testing.T) {
 	var memItemRepo memItemRepository
-	newItem, err := memItemRepo.NewItem("test")
+	newItem, err := memItemRepo.NewItem("test", "item")
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -15,7 +15,7 @@ func TestNewItem(t *testing.T) {
 
 func TestGetItemById(t *testing.T) {
 	var memItemRepo memItemRepository
-	newItem, err := memItemRepo.NewItem("test")
+	newItem, err := memItemRepo.NewItem("test", "item")
 	if err != nil {
 		t.Errorf(err.Error())
 	}
