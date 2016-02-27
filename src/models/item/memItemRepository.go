@@ -22,8 +22,8 @@ func (i *memItemRepository) GetItemById(id string) (Item, error) {
 	}
 }
 
-func (i *memItemRepository) NewItem(name string) (Item, error) {
-	newItem := BaseItem{name: name, id: string(idCount)}
+func (i *memItemRepository) NewItem(name string, species string) (Item, error) {
+	newItem := BaseItem{name: name, species: species, id: string(idCount)}
 	items[string(idCount)] = newItem
 	idCount += 1
 	return &newItem, nil
