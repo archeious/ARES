@@ -23,3 +23,7 @@ func (i *BaseItem) Species() string {
 func (i *BaseItem) SetName(newName string) {
 	i.name = newName
 }
+
+func NewBaseItem(name, species, id string) BaseItem {
+	return BaseItem{name: name, species: species, id: id}
+}

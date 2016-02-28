@@ -8,7 +8,7 @@ type Item interface {
 }
 
 type ItemRepository interface {
-	GetItemByName(string) (Item, error)
-	GetItemById(string) (Item, error)
-	NewItem(string, string) (Item, error)
+	GetByName(string) (Item, error)
+	GetById(string) (Item, error)
+	NewItem(string, string, string) (Item, error)
 }

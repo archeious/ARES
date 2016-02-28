@@ -1,15 +1,16 @@
 package series
 
 import (
-	"log"
 	"models/item"
 )
 
 type Series interface {
-	Item
+	item.Item
 	//Seasons  []*Season
 }
 
 type SeriesRepository interface {
-	ItemRepository
+	GetSeriesByName(string) (Series, error)
+	GetSeriesById(string) (Series, error)
+	NewSeries(string, string) (Series, error)
 }
