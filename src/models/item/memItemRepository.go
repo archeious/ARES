@@ -7,14 +7,14 @@ var (
 	items   map[string]BaseItem
 )
 
-type memItemRepository struct {
+type MemItemRepository struct {
 }
 
-func (i *memItemRepository) GetItemByName(n string) (Item, error) {
+func (i *MemItemRepository) GetByName(n string) (Item, error) {
 	return &BaseItem{}, errors.New("memItemRepository: GetItemByName not implemented!")
 }
 
-func (i *memItemRepository) GetItemById(id string) (Item, error) {
+func (i *MemItemRepository) GetById(id string) (Item, error) {
 	if i, ok := items[id]; !ok {
 		return &BaseItem{}, errors.New("memItemRepository: Item ID " + id + "does not exist!")
 	} else {
@@ -22,7 +22,7 @@ func (i *memItemRepository) GetItemById(id string) (Item, error) {
 	}
 }
 
-func (i *memItemRepository) NewItem(name string, species string) (Item, error) {
+func (i *MemItemRepository) NewItem(name string, species string) (Item, error) {
 	newItem := BaseItem{name: name, species: species, id: string(idCount)}
 	items[string(idCount)] = newItem
 	idCount += 1
