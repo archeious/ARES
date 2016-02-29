@@ -5,11 +5,13 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
+	"models/series"
 	"os"
 )
 
 var (
-	Dbase *sql.DB
+	Dbase      *sql.DB
+	SeriesRepo series.SeriesRepository
 )
 
 func init() {
@@ -22,8 +24,10 @@ func init() {
 	dsn := fmt.Sprintf("%s:%s@%s(%s:%s)/%s", dbUser, dbPass, dbProto, dbHost, dbPort, dbName)
 	fmt.Println("Opening database with DSN:", dsn)
 	db, err := sql.Open("mysql", dsn)
-	Dbase = db
 	if err != nil {
 		log.Fatal(err)
 	}
+	Dbase = db
+	//TODO: Error Checking
+	SeriesRepo, _ = series.NewMysqlSeriesRepository(Dbase)
 }
