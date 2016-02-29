@@ -2,7 +2,7 @@ package series
 
 import (
 	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 	"github.com/nu7hatch/gouuid"
 	"log"
 	"models/item"
@@ -35,18 +35,24 @@ func (i *MysqlSeriesRepository) GetSeriesById(id string) (Series, error) {
 	return &ConcreteSeries{item.NewBaseItem(name, "", id)}, err
 }
 
-//TODO: check to make sure series does not already exist
 func (i *MysqlSeriesRepository) NewSeries(name string, species string) (Series, error) {
 	u, err := uuid.NewV4()
 	newSeries := ConcreteSeries{item.NewBaseItem(name, species, u.String())}
 
 	stmt, err := i.db.Prepare("INSERT INTO series(id,name) VALUES (?,?)")
 	if err != nil {
-		log.Fatal("error")
+		return nil, err
 	}
 	_, err = stmt.Exec(u.String(), name)
 	if err != nil {
-		log.Fatal(err)
+		if driverErr, ok := err.(*mysql.MySQLError); ok {
+			switch {
+			case driverErr.Number == 1062: // Item already existrs: http://dev.mysql.com/doc/refman/5.5/en/error-messages-server.html#error_er_dup_entry
+				return nil, item.ErrAlreadyExistsInRepo
+			default:
+				return nil, err
+			}
+		}
 	}
 	return &newSeries, nil
 }
