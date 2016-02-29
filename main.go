@@ -1,6 +1,7 @@
 package main
 
 import (
+	"controllers"
 	"fmt"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -119,8 +120,9 @@ func main() {
 	s.HandleFunc("/", HomeHandler)
 	s.HandleFunc("/login", DisplayLoginHandler).Methods("GET")
 	s.HandleFunc("/login", LoginHandler).Methods("POST")
-	s.HandleFunc("/series", SeriesIndexHandler)
+	s.HandleFunc("/series", controllers.SeriesIndexHandler)
 	s.HandleFunc("/series/{id:[0-9]+}", SeriesDisplayHandler)
+	s.HandleFunc("/series/{name}", controllers.SeriesNameHandler)
 
 	staticPath, _ := config.GetString("STATIC")
 	fmt.Println("STATIC path ", staticPath)
