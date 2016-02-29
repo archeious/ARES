@@ -15,22 +15,30 @@ type MysqlSeriesRepository struct {
 func (i *MysqlSeriesRepository) GetSeriesByName(n string) (Series, error) {
 	var id string
 	var name string
-	sql := "select id, name from series where name = ?"
+	query := "select id, name from series where name = ?"
 
-	err := i.db.QueryRow(sql, n).Scan(&id, &name)
+	err := i.db.QueryRow(query, n).Scan(&id, &name)
 	if err != nil {
-		log.Fatal(err)
+		if err == sql.ErrNoRows {
+			return nil, item.ErrDoesNotExist
+		} else {
+			log.Fatal(err)
+		}
 	}
 	return &ConcreteSeries{item.NewBaseItem(name, "", id)}, err
 }
 
 func (i *MysqlSeriesRepository) GetSeriesById(id string) (Series, error) {
 	var name string
-	sql := "select id, name from series where id = ?"
+	query := "select id, name from series where id = ?"
 
-	err := i.db.QueryRow(sql, id).Scan(&id, &name)
+	err := i.db.QueryRow(query, id).Scan(&id, &name)
 	if err != nil {
-		log.Fatal(err)
+		if err == sql.ErrNoRows {
+			return nil, item.ErrDoesNotExist
+		} else {
+			log.Fatal(err)
+		}
 	}
 	return &ConcreteSeries{item.NewBaseItem(name, "", id)}, err
 }
@@ -58,8 +66,8 @@ func (i *MysqlSeriesRepository) NewSeries(name string, species string) (Series, 
 }
 
 //TODO: Add error handling
-func NewMysqlSeriesRepository(dbh *sql.DB) (MysqlSeriesRepository, error) {
-	return MysqlSeriesRepository{db: dbh}, nil
+func NewMysqlSeriesRepository(dbh *sql.DB) (*MysqlSeriesRepository, error) {
+	return &MysqlSeriesRepository{db: dbh}, nil
 }
 
 func init() {

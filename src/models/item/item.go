@@ -11,6 +11,7 @@ type Item interface {
 
 var (
 	ErrAlreadyExistsInRepo = errors.New("Item already exists")
+	ErrDoesNotExist        = errors.New("Item does not exist")
 )
 
 type ItemRepository interface {
