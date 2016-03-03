@@ -1,6 +1,9 @@
 {{ define "title" }}Series{{ end }}
 
 {{ define "content" }} 
+{{  range $key, $value := .series }}
+    <li><a href="/series/{{ $value.Id }}">{{ $value.Name }}</a></li>
+{{ end }}
 This is a series 
 {{ end }}
 

@@ -29,10 +29,9 @@ func (u *BaseUser) ValidatePassword(password string) (bool, error) {
 	fmt.Println("Trying to validate ", u.passHash, "with", password)
 	if err := bcrypt.CompareHashAndPassword(u.passHash, []byte(password)); err != nil {
 		return false, err
-	} else {
-		return true, nil
 	}
-	return false, nil
+	return true, nil
+
 }
 
 func (u *BaseUser) Name() string {

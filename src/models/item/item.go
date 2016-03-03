@@ -15,6 +15,7 @@ var (
 )
 
 type ItemRepository interface {
+	GetAll() ([]Item, error)
 	GetByName(string) (Item, error)
 	GetById(string) (Item, error)
 	NewItem(string, string, string) (Item, error)

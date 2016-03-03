@@ -120,9 +120,11 @@ func main() {
 	s.HandleFunc("/", HomeHandler)
 	s.HandleFunc("/login", DisplayLoginHandler).Methods("GET")
 	s.HandleFunc("/login", LoginHandler).Methods("POST")
-	s.HandleFunc("/series", controllers.SeriesIndexHandler)
-	s.HandleFunc("/series/{id:[0-9]+}", SeriesDisplayHandler)
+	s.HandleFunc("/series/add", controllers.SeriesAddFormHandler).Methods("GET")
+	s.HandleFunc("/series/add", controllers.SeriesAddHandler).Methods("POST")
+	s.HandleFunc("/series/{id:[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+}", controllers.SeriesIdHandler)
 	s.HandleFunc("/series/{name}", controllers.SeriesNameHandler)
+	s.HandleFunc("/series/", controllers.SeriesIndexHandler)
 
 	staticPath, _ := config.GetString("STATIC")
 	fmt.Println("STATIC path ", staticPath)
