@@ -2,17 +2,18 @@ package controllers
 
 import (
 	"app"
+	"fmt"
 	"github.com/gorilla/mux"
-	"html/template"
-	"log"
+	//	"html/template"
+	//	"log"
 	"models/item"
 	"models/series"
 	"net/http"
 	"strings"
 )
 
-//TODO: BUG: The the series name ACTUALLY has a dash this will fail
 func SeriesNameHandler(w http.ResponseWriter, r *http.Request) {
+	//BUG(archeious): If the series name ACTUALLY has a dash this will fail
 	var series series.Series
 	var err error
 	vars := mux.Vars(r)
@@ -30,15 +31,42 @@ func SeriesNameHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func SeriesIndexHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("templates/layout.tmpl", "templates/series/index.tmpl")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	args := make(map[string]string)
+	args := make(map[string]interface{})
+	args["user"] = "Jeff"
 	args["title"] = "Test Title"
 
-	if err := t.Execute(w, args); err != nil {
-		log.Fatal(err)
+	fmt.Println(args)
+
+	if series, err := app.SeriesRepo.GetAllSeries(); err == nil {
+		args["series"] = series
 	}
+
+	fmt.Println(args)
+	render(w, "series", "index", args)
+}
+
+func SeriesIdHandler(w http.ResponseWriter, r *http.Request) {
+	//BUG(archeious): If the series name ACTUALLY has a dash this will fail
+	var series series.Series
+	var err error
+	vars := mux.Vars(r)
+	fmt.Println(vars)
+	if series, err = app.SeriesRepo.GetSeriesById(vars["id"]); err != nil {
+		if err == item.ErrDoesNotExist {
+			render(w, "error", "doesnotexist", nil)
+		} else {
+			w.Write([]byte("500 " + err.Error()))
+		}
+	} else {
+		args := map[string]interface{}{"name": series.Name(), "user": "Jeff", "series": series}
+		render(w, "series", "name", args)
+	}
+}
+
+func SeriesAddFormHandler(w http.ResponseWriter, r *http.Request) {
+	render(w, "series", "add", nil)
+}
+
+func SeriesAddHandler(w http.ResponseWriter, r *http.Request) {
+	render(w, "series", "index", nil)
 }
