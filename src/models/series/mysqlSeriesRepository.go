@@ -28,10 +28,45 @@ func (i *MysqlSeriesRepository) GetSeriesByName(n string) (Series, error) {
 	return &ConcreteSeries{item.NewBaseItem(name, "", id)}, err
 }
 
+func (i *MysqlSeriesRepository) GetAllSeries() ([]Series, error) {
+	itemLst := make([]Series, 0)
+	query := "select id, name from series"
+	rows, err := i.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id string
+		var name string
+		err := rows.Scan(&id, &name)
+		if err != nil {
+			return nil, err
+		}
+		itemLst = append(itemLst, &ConcreteSeries{item.NewBaseItem(name, "", id)})
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return itemLst, nil
+}
+
+func (i *MysqlSeriesRepository) GetAll() ([]item.Item, error) {
+	itemLst := make([]item.Item, 0)
+	seriesLst, _ := i.GetAllSeries()
+	for _, v := range seriesLst {
+		itemLst = append(itemLst, v)
+	}
+	//TODO: error check
+	return itemLst, nil
+}
+
 func (i *MysqlSeriesRepository) GetSeriesById(id string) (Series, error) {
 	var name string
 	query := "select id, name from series where id = ?"
-
+	log.Println(query, id)
 	err := i.db.QueryRow(query, id).Scan(&id, &name)
 	if err != nil {
 		if err == sql.ErrNoRows {

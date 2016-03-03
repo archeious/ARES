@@ -3,7 +3,7 @@ package item
 import "testing"
 
 func TestNewItem(t *testing.T) {
-	var memItemRepo memItemRepository
+	var memItemRepo MemItemRepository
 	newItem, err := memItemRepo.NewItem("test", "item")
 	if err != nil {
 		t.Errorf(err.Error())
@@ -14,12 +14,12 @@ func TestNewItem(t *testing.T) {
 }
 
 func TestGetItemById(t *testing.T) {
-	var memItemRepo memItemRepository
+	var memItemRepo MemItemRepository
 	newItem, err := memItemRepo.NewItem("test", "item")
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-	gotItem, err := memItemRepo.GetItemById(newItem.Id())
+	gotItem, err := memItemRepo.GetById(newItem.Id())
 	if gotItem.Name() != "test" {
 		t.Errorf("Item retrieved by Id had the incorrect name")
 	}

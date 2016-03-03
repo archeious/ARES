@@ -10,6 +10,14 @@ var (
 type MemItemRepository struct {
 }
 
+func (i *MemItemRepository) GetAll() []Item {
+	itemLst := make([]Item, 0)
+	for _, item := range items {
+		itemLst = append(itemLst, &item)
+	}
+	return itemLst
+}
+
 func (i *MemItemRepository) GetByName(n string) (Item, error) {
 	return &BaseItem{}, errors.New("memItemRepository: GetItemByName not implemented!")
 }
