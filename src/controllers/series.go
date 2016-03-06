@@ -34,7 +34,6 @@ func SeriesIndexHandler(w http.ResponseWriter, r *http.Request) {
 	args := make(map[string]interface{})
 	args["user"] = "Jeff"
 	args["title"] = "Test Title"
-
 	fmt.Println(args)
 
 	if series, err := app.SeriesRepo.GetAllSeries(); err == nil {
@@ -68,5 +67,21 @@ func SeriesAddFormHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func SeriesAddHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Printf("Error processing form")
+	}
+	fmt.Println(r.Form)
+
+	name := r.FormValue("name")
+	//TODO: Error Check
+	//TODO: nil species
+	newSeries, _ := app.SeriesRepo.NewSeries(name, "")
+
+	args := make(map[string]interface{})
+	args["series"] = newSeries
+	vars := mux.Vars(r)
+	fmt.Println(vars)
+	fmt.Println(args)
 	render(w, "series", "index", nil)
 }
