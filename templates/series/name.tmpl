@@ -1,9 +1,14 @@
 {{ define "title" }}Series{{ end }}
 
 {{ define "content" }} 
-Series: {{ .series.Name }}
+Series: {{ .series.Name }}</br>
+Synopsis:</br>
+<pre>{{ .series.Synopsis }}</pre></br>
 {{ range $key, $value := .series.ExtIDs }}
 <li>{{$key }} {{ $value }}
-{{ end  }}
+    {{ end  }}</br>
+
+<a href="/series/edit/{{ .series.Id }}">Edit</a>
+
 {{ end }}
 
