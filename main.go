@@ -124,7 +124,7 @@ func main() {
 	s.HandleFunc("/series/add", controllers.SeriesAddHandler).Methods("POST")
 	s.HandleFunc("/series/{id:[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+}", controllers.SeriesIdHandler)
 	s.HandleFunc("/series/{name}", controllers.SeriesNameHandler)
-	s.HandleFunc("/series/", controllers.SeriesIndexHandler)
+	s.HandleFunc("/series", controllers.SeriesIndexHandler)
 
 	staticPath, _ := config.GetString("STATIC")
 	fmt.Println("STATIC path ", staticPath)
