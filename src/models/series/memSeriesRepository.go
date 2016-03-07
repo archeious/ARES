@@ -26,7 +26,7 @@ func (i *MemSeriesRepository) GetSeriesById(id string) (Series, error) {
 }
 
 func (i *MemSeriesRepository) NewSeries(name string, species string) (Series, error) {
-	newSeries := ConcreteSeries{item.NewBaseItem(name, species, string(idCount))}
+	newSeries := ConcreteSeries{BaseItem: item.NewBaseItem(name, species, string(idCount))}
 	series[string(idCount)] = newSeries
 	idCount += 1
 	return &newSeries, nil

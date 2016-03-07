@@ -1,11 +1,11 @@
 package item
 
 type BaseItem struct {
-	id   string
-	name string
+	id   string `schema:"id"`
+	name string `schema:"name"`
 	// why species and not type?  Well if you have syntax highlighting on you will see why.
 	// I can't use "type" and I am in a weird mood, so suck it future self.
-	species string
+	species string `'schema:"species"`
 }
 
 func (i *BaseItem) Name() string {

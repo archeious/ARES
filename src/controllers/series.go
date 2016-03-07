@@ -34,7 +34,6 @@ func SeriesIndexHandler(w http.ResponseWriter, r *http.Request) {
 	args := make(map[string]interface{})
 	args["user"] = "Jeff"
 	args["title"] = "Test Title"
-
 	fmt.Println(args)
 
 	if series, err := app.SeriesRepo.GetAllSeries(); err == nil {
@@ -68,5 +67,37 @@ func SeriesAddFormHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func SeriesAddHandler(w http.ResponseWriter, r *http.Request) {
-	render(w, "series", "index", nil)
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Printf("Error processing form")
+	}
+	fmt.Println("FORM:", r.Form)
+
+	name := r.FormValue("name")
+
+	//TODO: Error Check
+	//TODO: nil species
+	if newSeries, err := app.SeriesRepo.NewSeries(name, ""); err == nil {
+		args := make(map[string]interface{})
+		if extid := r.FormValue("malid"); extid != "" {
+			newSeries.SetExtID("mal", extid)
+		}
+		if extid := r.FormValue("imdbid"); extid != "" {
+			newSeries.SetExtID("imdb", extid)
+		}
+		if err := app.SeriesRepo.SaveSeries(newSeries); err != nil {
+			fmt.Println(err)
+		}
+		args["imdbId"] = r.FormValue("imdbid")
+
+		fmt.Println("ARGS:", args)
+		render(w, "series", "index", nil)
+	} else {
+		if err == item.ErrAlreadyExists {
+			http.Redirect(w, r, "/series/edit/"+newSeries.Id(), http.StatusFound)
+			return
+		} else {
+			fmt.Println(err)
+		}
+	}
 }

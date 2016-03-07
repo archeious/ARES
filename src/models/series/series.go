@@ -8,6 +8,9 @@ import (
 
 type Series interface {
 	item.Item
+	JName() string
+	ExtIDs() map[string]string
+	SetExtID(string, string)
 	//Seasons  []*Season
 }
 
@@ -16,4 +19,5 @@ type SeriesRepository interface {
 	GetSeriesByName(string) (Series, error)
 	GetSeriesById(string) (Series, error)
 	NewSeries(string, string) (Series, error)
+	SaveSeries(Series) error
 }

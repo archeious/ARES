@@ -2,5 +2,8 @@
 
 {{ define "content" }} 
 Series: {{ .series.Name }}
+{{ range $key, $value := .series.ExtIDs }}
+<li>{{$key }} {{ $value }}
+{{ end  }}
 {{ end }}
 
