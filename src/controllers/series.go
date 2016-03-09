@@ -25,15 +25,13 @@ func SeriesNameHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("500 " + err.Error()))
 		}
 	} else {
-		args := map[string]interface{}{"name": series.Name(), "user": "Jeff", "series": series}
+		args := map[string]interface{}{"series": series}
 		render(w, "series", "name", args)
 	}
 }
 
 func SeriesIndexHandler(w http.ResponseWriter, r *http.Request) {
 	args := make(map[string]interface{})
-	args["user"] = "Jeff"
-	args["title"] = "Test Title"
 
 	if series, err := app.SeriesRepo.GetAllSeries(); err == nil {
 		args["series"] = series
@@ -54,7 +52,7 @@ func SeriesIdHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("500 " + err.Error()))
 		}
 	} else {
-		args := map[string]interface{}{"name": series.Name(), "user": "Jeff", "series": series}
+		args := map[string]interface{}{"series": series}
 		render(w, "series", "name", args)
 	}
 }
@@ -88,6 +86,7 @@ func SeriesEditHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
+	series.SetName(r.FormValue("name"))
 	series.SetJName(r.FormValue("jname"))
 	series.SetSynopsis(r.FormValue("synopsis"))
 	series.SetExtID("imdb", r.FormValue("imdbid"))

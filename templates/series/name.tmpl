@@ -4,6 +4,11 @@
 Series: {{ .series.Name }}</br>
 Synopsis:</br>
 <pre>{{ .series.Synopsis }}</pre></br>
+External Links</br>
+<ul>
+    <li><a target="_blank" href="http://www.imdb.com/title/{{.series.ExtIDs.imdb}}/">IMDb</a></li>
+    <li><a target="_blank" href="http://www.myanimelist.net/anime/{{.series.ExtIDs.mal}}/">MyAnimeList</a></li>
+</ul>
 {{ range $key, $value := .series.ExtIDs }}
 <li>{{$key }} {{ $value }}
     {{ end  }}</br>

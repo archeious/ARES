@@ -112,7 +112,9 @@ func main() {
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 
 	s := r.Host("test.datistry.com").Subrouter()
-	s.HandleFunc("/", HomeHandler)
+	s.HandleFunc("/", controllers.FrontPageHandler)
+	s.HandleFunc("/about", controllers.AboutPageHandler)
+	s.HandleFunc("/contact", controllers.ContactPageHandler)
 	s.HandleFunc("/login", DisplayLoginHandler).Methods("GET")
 	s.HandleFunc("/login", LoginHandler).Methods("POST")
 	s.HandleFunc("/series/edit/{urlid:[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+}", controllers.SeriesEditFormHandler).Methods("GET")
