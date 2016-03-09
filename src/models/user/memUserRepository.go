@@ -24,7 +24,6 @@ func (b *MemUserRepository) NewUser(un, pw string) (User, error) {
 		return &newUser, err
 	} else {
 		b.users[un] = newUser
-		fmt.Printf("\n\n\n %v \n\n\n", *b)
 		return &newUser, nil
 	}
 }

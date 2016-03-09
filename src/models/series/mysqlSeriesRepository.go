@@ -2,10 +2,11 @@ package series
 
 import (
 	"database/sql"
-	"github.com/go-sql-driver/mysql"
-	"github.com/nu7hatch/gouuid"
 	"log"
 	"models/item"
+
+	"github.com/go-sql-driver/mysql"
+	"github.com/nu7hatch/gouuid"
 )
 
 type MysqlSeriesRepository struct {
@@ -30,7 +31,35 @@ func (i *MysqlSeriesRepository) GetSeriesByName(n string) (Series, error) {
 
 func (i *MysqlSeriesRepository) GetAllSeries() ([]Series, error) {
 	itemLst := make([]Series, 0)
-	query := "select id, name from series"
+	query := "select id, name, synopsis from series"
+	rows, err := i.db.Query(query)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id string
+		var name string
+		var synopsis sql.NullString
+		err := rows.Scan(&id, &name, &synopsis)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		itemLst = append(itemLst, &ConcreteSeries{BaseItem: item.NewBaseItem(name, "", id), synopsis: synopsis.String})
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return itemLst, nil
+}
+
+func (i *MysqlSeriesRepository) GetSeriesByTag(item.Tag) ([]Series, error) {
+	itemLst := make([]Series, 0)
+	query := "select s.id, s.name from series s join seriesTag st on s.id=st.series_id join seriesTagName stn on st.tagName_id=stn.id and stn.name='featured'"
 	rows, err := i.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -49,7 +78,6 @@ func (i *MysqlSeriesRepository) GetAllSeries() ([]Series, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return itemLst, nil
 }
 
@@ -65,9 +93,10 @@ func (i *MysqlSeriesRepository) GetAll() ([]item.Item, error) {
 
 func (i *MysqlSeriesRepository) GetSeriesById(id string) (Series, error) {
 	var name string
-	query := "select id, name from series where id = ?"
-	log.Println(query, id)
-	err := i.db.QueryRow(query, id).Scan(&id, &name)
+	var synopsis sql.NullString
+	var jname sql.NullString
+	query := "select id, name, synopsis, jname from series where id = ?"
+	err := i.db.QueryRow(query, id).Scan(&id, &name, &synopsis, &jname)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, item.ErrDoesNotExist
@@ -77,13 +106,20 @@ func (i *MysqlSeriesRepository) GetSeriesById(id string) (Series, error) {
 	}
 
 	s := ConcreteSeries{BaseItem: item.NewBaseItem(name, "", id)}
+	s.SetSynopsis(synopsis.String)
+	s.SetJName(jname.String)
 	i.GetSeriesExtIds(&s)
 	return &s, err
 }
 
-func (i *MysqlSeriesRepository) NewSeries(name string, species string) (Series, error) {
+func (i *MysqlSeriesRepository) NewSeries(name string) (Series, error) {
+	//check if the series already exists.
+	if ser, err := i.GetSeriesByName(name); err == nil {
+		return ser, err
+	}
+
 	u, err := uuid.NewV4()
-	newSeries := ConcreteSeries{BaseItem: item.NewBaseItem(name, species, u.String())}
+	newSeries := ConcreteSeries{BaseItem: item.NewBaseItem(name, "", u.String())}
 
 	stmt, err := i.db.Prepare("INSERT INTO series(id,name) VALUES (?,?)")
 	if err != nil {
@@ -106,9 +142,17 @@ func (i *MysqlSeriesRepository) NewSeries(name string, species string) (Series, 
 }
 
 func (i *MysqlSeriesRepository) SaveSeries(s Series) error {
-	log.Println("saving:", s)
 	tx, err := i.db.Begin()
-	log.Println("deleting ids:", s)
+	if serStmt, err := i.db.Prepare("insert into series (id,name,jname,synopsis) values(?,?,?,?) on duplicate key update name=?,jname=?,synopsis=?"); err != nil {
+		log.Println(err)
+		return err
+	} else {
+		if _, err := serStmt.Exec(s.Id(), s.Name(), s.JName(), s.Synopsis(), s.Name(), s.JName(), s.Synopsis()); err != nil {
+			log.Println(err)
+			return err
+		}
+	}
+
 	stmt, err := i.db.Prepare("delete from extId where id = ?")
 	if err != nil {
 		tx.Rollback()
@@ -123,9 +167,7 @@ func (i *MysqlSeriesRepository) SaveSeries(s Series) error {
 		tx.Rollback()
 		return err
 	} else {
-		log.Println("inserting ids:", s.ExtIDs())
 		for k, v := range s.ExtIDs() {
-			log.Println("inserting s.Id(),k,v:", s.Id(), k, v)
 			if _, err = extIdStmt.Exec(s.Id(), k, v); err != nil {
 				tx.Rollback()
 				return err
@@ -140,7 +182,7 @@ func (i *MysqlSeriesRepository) GetSeriesExtIds(s Series) {
 	query := "select name, extId from extId where id = ?"
 	rows, err := i.db.Query(query, s.Id())
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 		return
 	}
 	defer rows.Close()
@@ -149,7 +191,7 @@ func (i *MysqlSeriesRepository) GetSeriesExtIds(s Series) {
 		var name string
 		err := rows.Scan(&name, &extid)
 		if err != nil {
-			log.Println(err)
+			log.Fatal(err)
 			return
 		}
 		s.SetExtID(name, extid)

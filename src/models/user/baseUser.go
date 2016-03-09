@@ -1,7 +1,6 @@
 package user
 
 import (
-	"fmt"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -26,7 +25,6 @@ func (u *BaseUser) SetPassword(newPass string) error {
 }
 
 func (u *BaseUser) ValidatePassword(password string) (bool, error) {
-	fmt.Println("Trying to validate ", u.passHash, "with", password)
 	if err := bcrypt.CompareHashAndPassword(u.passHash, []byte(password)); err != nil {
 		return false, err
 	}

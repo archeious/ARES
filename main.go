@@ -55,11 +55,9 @@ func init() {
 	if _, err := UserRepo.NewUser("jeff", "password"); err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("\nAFTER ADD\n%v\n\n", UserRepo)
 }
 
 func renderTemplate(w http.ResponseWriter, name string, data map[string]interface{}) error {
-	fmt.Printf("Rendering: %s\n", name)
 	tmpl, ok := templates[name]
 	if !ok {
 		return fmt.Errorf("Template %s does not exist.", name)
@@ -91,13 +89,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	u, _ := UserRepo.GetUserByName(username)
 
-	fmt.Println(u)
-
 	if ok, err := u.ValidatePassword(password); ok {
-		fmt.Println(u.Name(), "logged in successfully")
+		fmt.Println(err)
 		http.Redirect(w, r, "/", 302)
 	} else {
-		fmt.Println(err, username, " was unable to login")
 		renderTemplate(w, "Login.html", nil)
 	}
 }
@@ -117,18 +112,19 @@ func main() {
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 
 	s := r.Host("test.datistry.com").Subrouter()
-	s.HandleFunc("/", HomeHandler)
+	s.HandleFunc("/", controllers.FrontPageHandler)
+	s.HandleFunc("/about", controllers.AboutPageHandler)
+	s.HandleFunc("/contact", controllers.ContactPageHandler)
 	s.HandleFunc("/login", DisplayLoginHandler).Methods("GET")
 	s.HandleFunc("/login", LoginHandler).Methods("POST")
+	s.HandleFunc("/series/edit/{urlid:[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+}", controllers.SeriesEditFormHandler).Methods("GET")
+	s.HandleFunc("/series/edit/{urlid:[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+}", controllers.SeriesEditHandler).Methods("POST")
 	s.HandleFunc("/series/add", controllers.SeriesAddFormHandler).Methods("GET")
 	s.HandleFunc("/series/add", controllers.SeriesAddHandler).Methods("POST")
 	s.HandleFunc("/series/{id:[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+}", controllers.SeriesIdHandler)
 	s.HandleFunc("/series/{name}", controllers.SeriesNameHandler)
 	s.HandleFunc("/series", controllers.SeriesIndexHandler)
-
 	staticPath, _ := config.GetString("STATIC")
-	fmt.Println("STATIC path ", staticPath)
 	r.PathPrefix("/public/").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir(staticPath))))
-
 	http.ListenAndServe(":3333", loggedRouter)
 }

@@ -25,22 +25,18 @@ func SeriesNameHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("500 " + err.Error()))
 		}
 	} else {
-		args := map[string]interface{}{"name": series.Name(), "user": "Jeff", "series": series}
+		args := map[string]interface{}{"series": series}
 		render(w, "series", "name", args)
 	}
 }
 
 func SeriesIndexHandler(w http.ResponseWriter, r *http.Request) {
 	args := make(map[string]interface{})
-	args["user"] = "Jeff"
-	args["title"] = "Test Title"
-	fmt.Println(args)
 
 	if series, err := app.SeriesRepo.GetAllSeries(); err == nil {
 		args["series"] = series
 	}
 
-	fmt.Println(args)
 	render(w, "series", "index", args)
 }
 
@@ -49,7 +45,6 @@ func SeriesIdHandler(w http.ResponseWriter, r *http.Request) {
 	var series series.Series
 	var err error
 	vars := mux.Vars(r)
-	fmt.Println(vars)
 	if series, err = app.SeriesRepo.GetSeriesById(vars["id"]); err != nil {
 		if err == item.ErrDoesNotExist {
 			render(w, "error", "doesnotexist", nil)
@@ -57,9 +52,48 @@ func SeriesIdHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("500 " + err.Error()))
 		}
 	} else {
-		args := map[string]interface{}{"name": series.Name(), "user": "Jeff", "series": series}
+		args := map[string]interface{}{"series": series}
 		render(w, "series", "name", args)
 	}
+}
+
+func SeriesEditFormHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	if series, err := app.SeriesRepo.GetSeriesById(vars["urlid"]); err != nil {
+		w.Write([]byte("500 " + err.Error()))
+		return
+	} else {
+		args := map[string]interface{}{"series": series}
+		render(w, "series", "edit", args)
+	}
+}
+
+func SeriesEditHandler(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		fmt.Println("Error Processing Form")
+		w.Write([]byte("500 " + err.Error()))
+		return
+	}
+	vars := mux.Vars(r)
+	urlid := vars["urlid"]
+	id := r.FormValue("id")
+	if urlid != id {
+		fmt.Println("ID MISMATCH:", urlid, id)
+		return
+	}
+	series, err := app.SeriesRepo.GetSeriesById(id)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	series.SetName(r.FormValue("name"))
+	series.SetJName(r.FormValue("jname"))
+	series.SetSynopsis(r.FormValue("synopsis"))
+	series.SetExtID("imdb", r.FormValue("imdbid"))
+	series.SetExtID("mal", r.FormValue("malid"))
+	app.SeriesRepo.SaveSeries(series)
+	args := map[string]interface{}{"series": series}
+	render(w, "series", "edit", args)
 }
 
 func SeriesAddFormHandler(w http.ResponseWriter, r *http.Request) {
@@ -71,13 +105,12 @@ func SeriesAddHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("Error processing form")
 	}
-	fmt.Println("FORM:", r.Form)
 
 	name := r.FormValue("name")
 
 	//TODO: Error Check
 	//TODO: nil species
-	if newSeries, err := app.SeriesRepo.NewSeries(name, ""); err == nil {
+	if newSeries, err := app.SeriesRepo.NewSeries(name); err == nil {
 		args := make(map[string]interface{})
 		if extid := r.FormValue("malid"); extid != "" {
 			newSeries.SetExtID("mal", extid)
@@ -85,12 +118,15 @@ func SeriesAddHandler(w http.ResponseWriter, r *http.Request) {
 		if extid := r.FormValue("imdbid"); extid != "" {
 			newSeries.SetExtID("imdb", extid)
 		}
+		if synopsis := r.FormValue("synopsis"); synopsis != "" {
+			newSeries.SetSynopsis(synopsis)
+		}
+
 		if err := app.SeriesRepo.SaveSeries(newSeries); err != nil {
 			fmt.Println(err)
 		}
 		args["imdbId"] = r.FormValue("imdbid")
-
-		fmt.Println("ARGS:", args)
+		args["action"] = "add"
 		render(w, "series", "index", nil)
 	} else {
 		if err == item.ErrAlreadyExists {

@@ -7,7 +7,11 @@ type Item interface {
 	SetName(string)
 	Id() string
 	Species() string
+	Tags() []Tag
+	SetTag(Tag)
 }
+
+type Tag string
 
 var (
 	ErrAlreadyExists = errors.New("Item already exists")

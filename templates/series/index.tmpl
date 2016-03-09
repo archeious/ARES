@@ -2,7 +2,16 @@
 
 {{ define "content" }} 
 {{  range $key, $value := .series }}
-    <li><a href="/series/{{ $value.Id }}">{{ $value.Name }}</a></li>
+<div class="col-lg-4">
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h3 class="panel-title"><a href="/series/{{ $value.Id  }}">{{ $value.Name }}</a></h3>
+    </div>
+    <div class="panel-body">
+        {{ substring $value.Synopsis 0 100 }}
+    </div>
+</div>
+</div>
 {{ end }}
 <a href="series/add">Add New Series</a>
 {{ end }}
