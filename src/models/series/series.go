@@ -20,6 +20,7 @@ type Series interface {
 type SeriesRepository interface {
 	GetAllSeries() ([]Series, error)
 	GetSeriesByName(string) (Series, error)
+	GetSeriesByTag(item.Tag) ([]Series, error)
 	GetSeriesById(string) (Series, error)
 	NewSeries(string) (Series, error)
 	SaveSeries(Series) error

@@ -9,12 +9,13 @@ type ConcreteSeries struct {
 	jName    string
 	synopsis string
 	extIDs   map[string]string
+	tags     []item.Tag
 	//	Seasons []*Season
 }
 
 //TODO: Add error checking
 func NewConceteSeries(name, species, synopis, id, jn, syn string) (ConcreteSeries, error) {
-	return ConcreteSeries{item.NewBaseItem(name, species, id), jn, syn, nil}, nil
+	return ConcreteSeries{item.NewBaseItem(name, species, id), jn, syn, nil, nil}, nil
 }
 
 func (s *ConcreteSeries) JName() string {

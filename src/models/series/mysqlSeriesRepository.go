@@ -2,10 +2,11 @@ package series
 
 import (
 	"database/sql"
-	"github.com/go-sql-driver/mysql"
-	"github.com/nu7hatch/gouuid"
 	"log"
 	"models/item"
+
+	"github.com/go-sql-driver/mysql"
+	"github.com/nu7hatch/gouuid"
 )
 
 type MysqlSeriesRepository struct {
@@ -30,7 +31,35 @@ func (i *MysqlSeriesRepository) GetSeriesByName(n string) (Series, error) {
 
 func (i *MysqlSeriesRepository) GetAllSeries() ([]Series, error) {
 	itemLst := make([]Series, 0)
-	query := "select id, name from series"
+	query := "select id, name, synopsis from series"
+	rows, err := i.db.Query(query)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id string
+		var name string
+		var synopsis sql.NullString
+		err := rows.Scan(&id, &name, &synopsis)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		itemLst = append(itemLst, &ConcreteSeries{BaseItem: item.NewBaseItem(name, "", id), synopsis: synopsis.String})
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return itemLst, nil
+}
+
+func (i *MysqlSeriesRepository) GetSeriesByTag(item.Tag) ([]Series, error) {
+	itemLst := make([]Series, 0)
+	query := "select s.id, s.name from series s join seriesTag st on s.id=st.series_id join seriesTagName stn on st.tagName_id=stn.id and stn.name='featured'"
 	rows, err := i.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -49,7 +78,6 @@ func (i *MysqlSeriesRepository) GetAllSeries() ([]Series, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return itemLst, nil
 }
 
