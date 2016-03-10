@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	//"github.com/gorilla/sessions"
 	"github.com/tsuru/config"
 	"html/template"
 	"log"
@@ -81,18 +82,47 @@ func DisplayLoginHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "Login.html", nil)
 }
 
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := controllers.Store.Get(r, "session-name")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	if _, ok := session.Values["user"]; ok {
+		delete(session.Values, "user")
+		if err := session.Save(r, w); err != nil {
+			fmt.Println("Save Error:", err)
+		}
+	}
+	http.Redirect(w, r, "/", 302)
+}
+
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	username := strings.Join(r.Form["username"], "")
 	password := strings.Join(r.Form["password"], "")
 
+	fmt.Println("username:", username, "password:", password)
+
 	u, _ := UserRepo.GetUserByName(username)
 
+	fmt.Println("user obj:", u)
+
 	if ok, err := u.ValidatePassword(password); ok {
-		fmt.Println(err)
+		fmt.Println("password validated")
+		session, err := controllers.Store.Get(r, "session-name")
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		session.Values["user"] = username
+		if err := session.Save(r, w); err != nil {
+			fmt.Println("Save Error:", err)
+		}
 		http.Redirect(w, r, "/", 302)
 	} else {
+		fmt.Println(err)
 		renderTemplate(w, "Login.html", nil)
 	}
 }
@@ -110,6 +140,8 @@ func SeriesIndexHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	r := mux.NewRouter()
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
+	userAuth := controllers.UserAuthMiddleWare(loggedRouter)
+	recovery := handlers.RecoveryHandler()(userAuth)
 
 	s := r.Host("test.datistry.com").Subrouter()
 	s.HandleFunc("/", controllers.FrontPageHandler)
@@ -117,6 +149,7 @@ func main() {
 	s.HandleFunc("/contact", controllers.ContactPageHandler)
 	s.HandleFunc("/login", DisplayLoginHandler).Methods("GET")
 	s.HandleFunc("/login", LoginHandler).Methods("POST")
+	s.HandleFunc("/logout", LogoutHandler)
 	s.HandleFunc("/series/edit/{urlid:[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+}", controllers.SeriesEditFormHandler).Methods("GET")
 	s.HandleFunc("/series/edit/{urlid:[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+}", controllers.SeriesEditHandler).Methods("POST")
 	s.HandleFunc("/series/add", controllers.SeriesAddFormHandler).Methods("GET")
@@ -126,5 +159,5 @@ func main() {
 	s.HandleFunc("/series", controllers.SeriesIndexHandler)
 	staticPath, _ := config.GetString("STATIC")
 	r.PathPrefix("/public/").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir(staticPath))))
-	http.ListenAndServe(":3333", loggedRouter)
+	http.ListenAndServe(":3333", recovery)
 }

@@ -20,13 +20,13 @@ func SeriesNameHandler(w http.ResponseWriter, r *http.Request) {
 	name := strings.Replace(vars["name"], "-", " ", -1)
 	if series, err = app.SeriesRepo.GetSeriesByName(name); err != nil {
 		if err == item.ErrDoesNotExist {
-			render(w, "error", "doesnotexist", nil)
+			render(w, r, "error", "doesnotexist", nil)
 		} else {
 			w.Write([]byte("500 " + err.Error()))
 		}
 	} else {
 		args := map[string]interface{}{"series": series}
-		render(w, "series", "name", args)
+		render(w, r, "series", "name", args)
 	}
 }
 
@@ -37,7 +37,7 @@ func SeriesIndexHandler(w http.ResponseWriter, r *http.Request) {
 		args["series"] = series
 	}
 
-	render(w, "series", "index", args)
+	render(w, r, "series", "index", args)
 }
 
 func SeriesIdHandler(w http.ResponseWriter, r *http.Request) {
@@ -47,13 +47,13 @@ func SeriesIdHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	if series, err = app.SeriesRepo.GetSeriesById(vars["id"]); err != nil {
 		if err == item.ErrDoesNotExist {
-			render(w, "error", "doesnotexist", nil)
+			render(w, r, "error", "doesnotexist", nil)
 		} else {
 			w.Write([]byte("500 " + err.Error()))
 		}
 	} else {
 		args := map[string]interface{}{"series": series}
-		render(w, "series", "name", args)
+		render(w, r, "series", "name", args)
 	}
 }
 
@@ -64,7 +64,7 @@ func SeriesEditFormHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 		args := map[string]interface{}{"series": series}
-		render(w, "series", "edit", args)
+		render(w, r, "series", "edit", args)
 	}
 }
 
@@ -93,11 +93,11 @@ func SeriesEditHandler(w http.ResponseWriter, r *http.Request) {
 	series.SetExtID("mal", r.FormValue("malid"))
 	app.SeriesRepo.SaveSeries(series)
 	args := map[string]interface{}{"series": series}
-	render(w, "series", "edit", args)
+	render(w, r, "series", "edit", args)
 }
 
 func SeriesAddFormHandler(w http.ResponseWriter, r *http.Request) {
-	render(w, "series", "add", nil)
+	render(w, r, "series", "add", nil)
 }
 
 func SeriesAddHandler(w http.ResponseWriter, r *http.Request) {
@@ -127,7 +127,7 @@ func SeriesAddHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		args["imdbId"] = r.FormValue("imdbid")
 		args["action"] = "add"
-		render(w, "series", "index", nil)
+		render(w, r, "series", "index", nil)
 	} else {
 		if err == item.ErrAlreadyExists {
 			http.Redirect(w, r, "/series/edit/"+newSeries.Id(), http.StatusFound)
